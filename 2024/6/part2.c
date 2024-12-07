@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/06 13:04:52 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/07 01:26:11 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ static void next_dir(int *dir)
 	}
 }
 
-static void move(char **map, t_guard *guard)
+static void move(char **map, t_guard *guard, int replace)
 {
 	int nx;
 	int ny;
@@ -87,9 +87,11 @@ static void move(char **map, t_guard *guard)
 	if(is_on_map(map, nx, ny) && map[ny][nx] == '#')
 	{
 		next_dir(guard->dir);
-		move(map, guard);
+		move(map, guard, replace);
 		return ;
 	}
+	if(replace)
+		map[guard->pos[0]][guard->pos[1]] = 'X';
 	guard->pos[0] = ny;
 	guard->pos[1] = nx;
 }
@@ -126,8 +128,8 @@ int is_loop(char **map, t_guard start, int x, int y)
 	map[x][y] = '#';
 	while(is_on_map(map, guard.pos[1], guard.pos[0]))
 	{
-		move(map, &guard);
-		if(!memcmp(&guard, &start, sizeof(t_guard)) || i++ > 50000)
+		move(map, &guard, 0);
+		if(i++ > 6000)
 		{
 			map[x][y] = '.';
 			return(1);
@@ -143,9 +145,13 @@ long int resolve_part2(char *input, char **split)
 	int x;
 	int y;
 	t_guard guard;
+	t_guard tmp;
 	long int res;
 
 	find_guard(split, &guard);
+	tmp = guard;
+	while(is_on_map(split, tmp.pos[1], tmp.pos[0]))
+		move(split, &tmp, 1);
 	y = 0;
 	res = 0;
 	while(split[y])
@@ -153,7 +159,7 @@ long int resolve_part2(char *input, char **split)
 		x = 0;
 		while(split[y][x])
 		{
-			if(split[x][y] == '.' && is_loop(split, guard, x, y))
+			if(split[x][y] == 'X' && is_loop(split, guard, x, y))
 				res++;
 			x++;
 		}
