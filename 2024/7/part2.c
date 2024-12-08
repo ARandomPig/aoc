@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/07 13:17:09 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/08 13:47:46 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,9 +96,15 @@ static long int test_nbrs(long int test_val, int *nbrs, char *op, int len)
 		if(i == len)
 			i--;
 		if(!next_op(op, i - 1) && tmp != test_val)
+		{
+			free(op);
+			free(nbrs);
 			return(0);
+		}
 		
 	}
+	free(op);
+	free(nbrs);
 	return(test_val);
 }
 
