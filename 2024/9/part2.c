@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/09 14:24:07 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/09 14:30:17 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ static void frag_disk(int *disk, int len)
 		while(*end_ptr == -1 && end_ptr > disk)
 			end_ptr--;
 		tmp = *end_ptr;
-		while(end_ptr[-bloc_len] == tmp && end_ptr > disk)
+		while(end_ptr[-bloc_len] == tmp && (end_ptr - bloc_len) > disk)
 			bloc_len++;
 		fs_ptr = find_place(disk, bloc_len, end_ptr);
 		while(fs_ptr && bloc_len > 0)
