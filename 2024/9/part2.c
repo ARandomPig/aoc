@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/09 14:30:17 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/09 15:15:38 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,20 +79,25 @@ static void frag_disk(int *disk, int len)
 	int *fs_ptr;
 	int *end_ptr;	
 	int bloc_len;
-	int tmp;
+	int cur_id;
+	int prev_id;
+	int max_size;
 
 	fs_ptr = disk;
 	end_ptr = disk + (len - 1);
+	prev_id = -1;
+	max_size = -1;
 	while(end_ptr > disk)
 	{
 		bloc_len = 0;
-		fs_ptr = disk;
+		fs_ptr = 0;
 		while(*end_ptr == -1 && end_ptr > disk)
 			end_ptr--;
-		tmp = *end_ptr;
-		while(end_ptr[-bloc_len] == tmp && (end_ptr - bloc_len) > disk)
+		cur_id = *end_ptr;
+		while(end_ptr[-bloc_len] == cur_id && (end_ptr - bloc_len) > disk)
 			bloc_len++;
-		fs_ptr = find_place(disk, bloc_len, end_ptr);
+		if((prev_id > cur_id || prev_id == -1) && (max_size > bloc_len || max_size == -1))
+			fs_ptr = find_place(disk, bloc_len, end_ptr);
 		while(fs_ptr && bloc_len > 0)
 		{
 			*fs_ptr = *end_ptr;
@@ -103,6 +108,9 @@ static void frag_disk(int *disk, int len)
 		}
 		if(!fs_ptr)
 			end_ptr -= bloc_len;	
+		if(!fs_ptr)
+			max_size = bloc_len;
+		prev_id = cur_id;
 	}
 }
 
