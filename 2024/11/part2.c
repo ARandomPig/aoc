@@ -1,18 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   part1.c                                            :+:      :+:    :+:   */
+/*   part2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/11 22:19:45 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/11 22:52:44 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "libft/libft.h"
+
+#define MAX_NB_MAP 1000
 
 typedef struct s_pebble
 {
@@ -77,39 +80,53 @@ static void split_pebble(long int *l, long int *r)
 	}
 }
 
-static long int get_nb(long int nb, int depth)
+static long int get_nb(long int nb, long int depth, long int *map)
 {
 	long int res;
 	long int tmp;
+	long int fuck;
 
-	if(depth == 25)
+	fuck = nb;
+	if(depth == 75)
 		return(1);
+	if(map && nb >= 0 && nb < MAX_NB_MAP && map[(depth * MAX_NB_MAP) + nb])
+		return(map[(depth * MAX_NB_MAP) + nb]);
+	res = 0;
 	if(nb == 0)
-		return(get_nb(1, depth + 1));
+		res = get_nb(1, depth + 1, map);
 	else if(count_digits(nb) % 2 == 0)
 	{
 		split_pebble(&nb, &tmp);
-		res = get_nb(nb, depth + 1);
-		return(res + get_nb(tmp, depth + 1));
+		res = get_nb(nb, depth + 1, map);
+		res += get_nb(tmp, depth + 1, map);
 	}
 	else
-		return(get_nb(nb * 2024, depth + 1));
+		res = get_nb(nb * 2024, depth + 1, map);
+	if(map && fuck >= 0 && fuck < MAX_NB_MAP)
+		map[(depth * MAX_NB_MAP) + fuck] = res;
+	return(res);
 }
 
-long int resolve_part1(char *input, char **split)
+long int resolve_part2(char *input, char **split)
 {
 	(void)split;
 	(void)input;
 	t_pebble *pebble;
-	pebble = get_input(input);
 	long int res;
+	long int *map;		
+	size_t		map_len;
 	(void)get_input;
 
 	res = 0;
+	pebble = get_input(input);
+	map_len = MAX_NB_MAP * 75 * sizeof(long int);
+	map = malloc(map_len);
+	bzero(map, map_len);
 	while(pebble)
 	{
-		res += get_nb(pebble->value, 0);
+		res += get_nb(pebble->value, 0, map);
 		pebble = pebble->next;
 	}
+	free(map);
 	return(res);
 }
