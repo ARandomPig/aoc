@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/12 13:32:35 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/13 01:39:11 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,7 @@
 #include <strings.h>
 #include "libft/libft.h"
 
-
-
-char **create_locations(char **map)
+static char **create_locations(char **map)
 {
 	int width;
 	int height;
@@ -42,7 +40,7 @@ char **create_locations(char **map)
 	return(res);
 }
 
-int get_area_perimetter(char **map, int pos[2], int perimetter, char **locations, char c)
+static int get_area_perimetter(char **map, int pos[2], int perimetter, char **locations, char c)
 {
 	int res;
 
@@ -63,7 +61,7 @@ int get_area_perimetter(char **map, int pos[2], int perimetter, char **locations
 	return(res);
 }
 
-long int calc_price(char **map, int x, int y)
+static long int calc_price(char **map, int x, int y)
 {
 	int area;
 	int perimetter;
