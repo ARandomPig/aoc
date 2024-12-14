@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/14 15:16:48 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/14 16:20:20 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <string.h>
-#include "mlx/mlx.h"
 #include "libft/libft.h"
 
 #define MAX_UP 103
 #define MAX_LEN 101
-#define ROBOT_SIZE 8
 
 typedef struct s_robot
 {
@@ -71,8 +69,8 @@ static void update_pos(t_robot *robot)
 {
 	while(robot)
 	{
-		robot->pos_x = (robot->pos_x + (robot->vel_x * 100));
-		robot->pos_y = (robot->pos_y + (robot->vel_y * 100));
+		robot->pos_x = (robot->pos_x + (robot->vel_x));
+		robot->pos_y = (robot->pos_y + (robot->vel_y));
 		robot->pos_x %= MAX_LEN;
 		robot->pos_y %= MAX_UP;
 		if(robot->pos_x < 0)
@@ -83,29 +81,7 @@ static void update_pos(t_robot *robot)
 	}
 }
 
-static long int get_result(t_robot *robot)
-{
-	long int tiles[4];
-
-	bzero(tiles, 4 * sizeof(long int));
-	while(robot)
-	{
-		robot->pos_x -= (MAX_LEN / 2);
-		robot->pos_y -= (MAX_UP / 2);
-		if(robot->pos_x < 0 && robot->pos_y < 0)
-			tiles[0]++;
-		else if(robot->pos_x > 0 && robot->pos_y < 0)
-			tiles[1]++;
-		else if(robot->pos_x < 0 && robot->pos_y > 0)
-			tiles[2]++;
-		else if(robot->pos_x > 0 && robot->pos_y > 0)
-			tiles[3]++;
-		robot = robot->next;
-	}
-	return(tiles[0] * tiles[1] * tiles[2] * tiles[3]);
-}
-
-static char **create_map(void)
+static char **create_map(char fill)
 {
 	char **res;
 	int i;
@@ -116,52 +92,66 @@ static char **create_map(void)
 	while(i < MAX_UP + 1)
 	{
 		res[i] = malloc(MAX_LEN + 2);
+		memset(res[i], fill, MAX_LEN + 1);
+		res[i][MAX_LEN + 1] = 0;
 		i++;
 	}
 	return(res);	
 }
 
-void set_pos(unsigned int *img, unsigned long pos, unsigned int color)
+void fill_map(char **map, t_robot *robot)
 {
 	int i;
-	int j;
 
 	i = 0;
-	while(i < ROBOT_SIZE)
+	while(map[i])
 	{
-		j = 0;
-		while(j < ROBOT_SIZE)
-		{
-			img[pos + (i * MAX_LEN * ROBOT_SIZE) + j] = color;
-			j++;
-		}
+		memset(map[i], '.', MAX_LEN + 1);
+		map[i][MAX_LEN + 1] = 0;
 		i++;
 	}
-}
-
-void fill_map(void *img, t_robot *robot)
-{
-	unsigned long pos;
-	int a;
-
-	img = mlx_get_data_addr(img,&a, &a, &a);
-	bzero(img, (MAX_LEN * ROBOT_SIZE) * (MAX_UP * ROBOT_SIZE) * sizeof(unsigned int));
 	while(robot)
 	{
-		pos = robot->pos_x * ROBOT_SIZE + (robot->pos_y * (MAX_LEN * ROBOT_SIZE) * ROBOT_SIZE);
-		set_pos(img, pos, 0xFFFFFF);
+		map[robot->pos_y][robot->pos_x] = '#';
 		robot = robot->next;
 	}
 }
 
-static int loop_fnc(t_data *data)
+static int count_area(char **map, int pos[2], char **locations)
 {
-	fill_map(data->img, data->robot);
-	mlx_put_image_to_window(data->mlx, data->win, data->img, 0 ,0);
-	printf("res : %d\n", data->res);
-	update_pos(data->robot);
-	data->res++;
-	usleep(20000);
+	int res;
+
+	res = 0;
+	if(pos[0] < 0 || pos[1] < 0 || !map[pos[0]] || !map[pos[0]][pos[1]] || locations[pos[0]][pos[1]] != '.' || map[pos[0]][pos[1]] != '#')
+		return(0);
+	locations[pos[0]][pos[1]] = '#';
+	res += count_area(map, (int [2]){pos[0] + 1, pos[1]}, locations);
+	res += count_area(map, (int [2]){pos[0] - 1, pos[1]}, locations);
+	res += count_area(map, (int [2]){pos[0], pos[1] + 1}, locations);
+	res += count_area(map, (int [2]){pos[0], pos[1] - 1}, locations);
+	return(res + (map[pos[0]][pos[1]] == '#'));
+}
+
+static int is_easter_egg(char **map)
+{
+	int i;
+	int j;
+	char **locations;
+
+	locations = create_map('.');
+	i = 0;
+	while(map[i])
+	{
+		j = 0;
+		while(map[i][j])
+		{
+			if(count_area(map, (int [2]){i, j}, locations) > 50)
+				return(1);
+			j++;
+		}
+		i++;
+	}
+	ft_free_str_arr(locations);
 	return(0);
 }
 
@@ -170,7 +160,7 @@ long int resolve_part2(char *input, char **split)
 	(void)input;
 	t_robot *robot;
 	long int res;
-	t_data data;
+	char **map;
 
 	robot = 0;
 	res = 0;
@@ -179,18 +169,13 @@ long int resolve_part2(char *input, char **split)
 		add_robot(&robot, *split);
 		split++;
 	}
-	data.mlx = mlx_init();
-	data.win = mlx_new_window(data.mlx, MAX_LEN * ROBOT_SIZE, MAX_UP * ROBOT_SIZE, "language : eyes");
-	data.img = mlx_new_image(data.mlx, MAX_LEN * ROBOT_SIZE, MAX_UP * ROBOT_SIZE);
-	data.robot = robot;
-	data.res = 0;
-	mlx_loop_hook(data.mlx, loop_fnc, &data);
-	mlx_loop(data.mlx);
-	while(1)
-		;;
-//	fill_show_map(map, robot);
-	(void)get_result;
-	(void)create_map;
-	(void)update_pos;
+	map = create_map('.');
+	fill_map(map,robot);
+	while(!is_easter_egg(map))
+	{
+		update_pos(robot);
+		res++;
+		fill_map(map,robot);
+	}
 	return(res);
 }

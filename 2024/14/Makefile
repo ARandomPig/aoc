@@ -6,7 +6,7 @@
 #    By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/17 15:48:36 by tomoron           #+#    #+#              #
-#    Updated: 2024/12/14 14:02:58 by tomoron          ###   ########.fr        #
+#    Updated: 2024/12/14 15:46:23 by tomoron          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ SRCS =	main.c\
 
 OBJS = $(SRCS:.c=.o)
 
-FLAGS = -Wextra -Werror -Wall -g
+FLAGS = -Wextra -Werror -Wall -g -O0
 
 LIB = libft/libft.a
 
@@ -54,7 +54,7 @@ part2.c:
 	cp ~/Desktop/aoc/part2.c .
 
 a.out: main.c $(OBJS) $(LIB)
-	clang $(FLAGS) $(OBJS) $(LIB) -Lmlx -lmlx -lX11 -lXext
+	clang $(FLAGS) $(OBJS) $(LIB)
 
 clean:
 	rm -rf $(OBJS)
