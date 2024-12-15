@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/15 15:06:58 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:11:42 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,5 +210,6 @@ long int resolve_part2(char *input, char **split)
 		instr++;
 	}
 	res = calc_score(split);
+	ft_free_str_arr(split);
 	return(res);
 }

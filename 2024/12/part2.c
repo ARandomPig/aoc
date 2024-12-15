@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/13 03:02:23 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:05:03 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,13 +91,19 @@ static void add_point(t_point **strt, int x, int y)
 static int check_surroundings(char **map, int pos[2], char c, int reset)
 {
 	static t_point *counted;
+	t_point *tmp;
 	int res;
 	int x;
 	int y;
 
 	if(reset)
 	{
-		counted = 0;
+		while(counted)
+		{
+			tmp = counted->next;
+			free(counted);
+			counted = tmp;
+		}
 		return(0);
 	}
 	if(is_counted(counted, pos[1], pos[0]))
@@ -166,6 +172,7 @@ static long int calc_price(char **map, int x, int y)
 	perimetter = get_area_perimetter(tmp, (int [2]){y, x}, 1, locations, tmp[y][x], 0);
 	check_surroundings(0, (int [2]){0, 0}, 0, 1);
 	ft_free_str_arr(locations);
+	ft_free_str_arr(tmp);
 	return(area * perimetter);
 }
 

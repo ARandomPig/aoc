@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/14 16:20:20 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:10:24 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,10 @@ static int is_easter_egg(char **map)
 		while(map[i][j])
 		{
 			if(count_area(map, (int [2]){i, j}, locations) > 50)
+			{
+				ft_free_str_arr(locations);
 				return(1);
+			}
 			j++;
 		}
 		i++;
@@ -159,6 +162,7 @@ long int resolve_part2(char *input, char **split)
 {
 	(void)input;
 	t_robot *robot;
+	t_robot *tmp;
 	long int res;
 	char **map;
 
@@ -177,5 +181,12 @@ long int resolve_part2(char *input, char **split)
 		res++;
 		fill_map(map,robot);
 	}
+	while(robot)
+	{
+		tmp = robot->next;
+		free(robot);
+		robot = tmp;
+	}
+	ft_free_str_arr(map);
 	return(res);
 }

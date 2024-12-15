@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/10 12:31:18 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 18:58:03 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,8 @@ static char **create_map(char **split, int *height, int *width)
 		(*height)++;
 	while(split[0][*width])
 		(*width)++;
-	res = malloc(*height * sizeof(char *));
+	res = malloc((*height + 1) * sizeof(char *));
+	res[*height] = 0;
 	*height = 0;
 	while(split[*height])
 	{
@@ -97,5 +98,6 @@ long int resolve_part1(char *input, char **split)
 		}
 		i++;
 	}
+	ft_free_str_arr(locations);
 	return(res);
 }

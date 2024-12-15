@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/11 22:52:44 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:02:10 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ long int resolve_part2(char *input, char **split)
 	(void)split;
 	(void)input;
 	t_pebble *pebble;
+	t_pebble *tmp;
 	long int res;
 	long int *map;		
 	size_t		map_len;
@@ -124,8 +125,10 @@ long int resolve_part2(char *input, char **split)
 	bzero(map, map_len);
 	while(pebble)
 	{
+		tmp = pebble->next;
 		res += get_nb(pebble->value, 0, map);
-		pebble = pebble->next;
+		free(pebble);
+		pebble = tmp;
 	}
 	free(map);
 	return(res);

@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/14 12:59:57 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:09:18 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,6 +97,7 @@ long int resolve_part1(char *input, char **split)
 {
 	(void)input;
 	t_robot *robot;
+	t_robot *tmp;
 	long int res;
 
 	robot = 0;
@@ -108,5 +109,11 @@ long int resolve_part1(char *input, char **split)
 	}
 	update_pos(robot);
 	res = get_result(robot);
+	while(robot)
+	{
+		tmp = robot->next;
+		free(robot);
+		robot = tmp;
+	}
 	return(res);
 }
