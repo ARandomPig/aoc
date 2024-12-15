@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/05 08:49:16 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:20:52 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,7 @@ long int resolve_part2(char *input, char **split)
 {
 	(void)input;
 	t_orders *orders;
+	t_orders *tmp;
 	long int res;
 
 	orders = 0;
@@ -148,6 +149,12 @@ long int resolve_part2(char *input, char **split)
 	{
 		res += check_line(*split, orders);
 		split++;
+	}
+	while(orders)
+	{
+		tmp = orders->next;
+		free(orders);
+		orders = tmp;
 	}
 	return(res);
 }

@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/05 08:50:09 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/15 19:20:04 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ static int respect_order(int *nbrs, t_orders *orders, int len)
 {
 	int i;
 	int j;
-//	int tmp;
 
 	i = 0;
 	while(i < len)
@@ -85,12 +84,7 @@ static int respect_order(int *nbrs, t_orders *orders, int len)
 			if(i != j)	
 			{
 				if(nbrs[i] == orders->left && nbrs[j] == orders->right && i > j)	
-				{
-				//	tmp = nbrs[i];
-				//	nbrs[i] = nbrs[j];
-				//	nbrs[j] = tmp;
 					return(0);
-				}
 			}
 			j++;
 		}
@@ -119,7 +113,10 @@ static long int check_line(char *line, t_orders *orders)
 
 	nbrs = get_numbers(line, &len);
 	if(!is_ordered(nbrs, orders, len))
+	{
+		free(nbrs);
 		return(0);
+	}
 	
 	res = nbrs[(len / 2)];
 	free(nbrs);
@@ -130,6 +127,7 @@ long int resolve_part1(char *input, char **split)
 {
 	(void)input;
 	t_orders *orders;
+	t_orders *tmp;
 	long int res;
 
 	orders = 0;
@@ -143,6 +141,12 @@ long int resolve_part1(char *input, char **split)
 	{
 		res += check_line(*split, orders);
 		split++;
+	}
+	while(orders)
+	{
+		tmp = orders->next;
+		free(orders);
+		orders = tmp;
 	}
 	return(res);
 }
