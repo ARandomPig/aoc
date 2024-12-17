@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/17 03:44:38 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/17 12:55:09 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,7 +88,20 @@ int is_visited(t_vis *vis, t_pos pos, int dir[2])
 	return(0);
 }
 
-int get_new_pos(t_lst **lst, t_vis *vis, t_pos *pos, uint32_t *score, int *dir)
+static char dir_to_bit(int *dir)
+{
+	if(dir[1] == 1)
+		return(0b1);
+	if(dir[1] == -1)
+		return(0b10);
+	if(dir[0] == 1)
+		return(0b100);
+	if(dir[0] == -1)
+		return(0b1000);
+	return(0);
+}
+
+int get_new_pos(t_lst **lst, char **vis, t_pos *pos, uint32_t *score, int *dir)
 {
 	t_lst *cur;
 	t_lst *sel;
@@ -125,8 +138,8 @@ int get_new_pos(t_lst **lst, t_vis *vis, t_pos *pos, uint32_t *score, int *dir)
 	dir[0] = sel->dir[0];
 	dir[1] = sel->dir[1];
 	free(sel);
-	if(is_visited(vis, *pos, dir))
-		get_new_pos(lst, vis, pos, score, dir);
+	if(vis[pos->y][pos->x] & (dir_to_bit(dir)))
+		return(get_new_pos(lst, vis, pos, score, dir));
 	return(1);
 }
 
@@ -177,25 +190,28 @@ uint32_t dijkstra(char **map, t_pos *pos)
 {
 	int dir[2];
 	int tmp[2];
-	t_vis *visited;
+	char **visited;
 	t_lst *lst;
 	uint32_t score;
 
-	visited = 0;
+	visited = create_map(map, 0, 1);
 	lst = 0;
 	add_lst(&lst, 0, *pos, (int [2]){0, 1});
 	while(get_new_pos(&lst, visited, pos, &score, dir))
 	{
-		visited_add(&visited, pos, dir);
+		visited[pos->y][pos->x] |= dir_to_bit(dir);
 		if(map[pos->y][pos->x] == '#')
 			continue;
 		if(map[pos->y][pos->x] == 'E')
 			return(score);
-		add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
+		if(map[pos->y + dir[0]][pos->x + dir[1]] != '#')
+			add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
 		rotate_dir(dir, 0, tmp);
-		add_lst(&lst, score + 1000, *pos, tmp);
+		if(map[pos->y + tmp[0]][pos->x + tmp[1]] != '#')
+			add_lst(&lst, score + 1000, *pos, tmp);
 		rotate_dir(dir, 1, tmp);
-		add_lst(&lst, score + 1000, *pos, tmp);
+		if(map[pos->y + tmp[0]][pos->x + tmp[1]] != '#')
+			add_lst(&lst, score + 1000, *pos, tmp);
 	}
 	return(0);
 }
