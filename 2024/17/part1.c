@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/17 17:00:12 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/17 18:40:12 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,6 +126,7 @@ long int resolve_part1(char *input, char **split)
 	
 	parse_input(split, reg, &ops, &len);
 	exec_instructions(ops, reg, len);
+	printf("\nreg : %d, %d, %d", reg[0], reg[1], reg[2]);
 	printf("\n");
 	return(0);
 }

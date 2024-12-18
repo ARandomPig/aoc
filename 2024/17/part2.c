@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/17 17:50:43 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/18 01:15:31 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,18 +14,16 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
-#include <sys/time.h>
 #include "libft/libft.h"
 
 static long int get_register(char *str)
 {
 	while(*str && *str != ':')
 		str++;
-	return(ft_atoi(str + 1));
+	return(atol(str + 1));
 }
 
-static void parse_input(char **split, int *reg, uint8_t **ops, size_t *len)
+static void parse_input(char **split, long int *reg, uint8_t **ops, size_t *len)
 {
 	char *tmp;
 	int i;
@@ -59,7 +57,7 @@ static void parse_input(char **split, int *reg, uint8_t **ops, size_t *len)
 	}
 }
 
-static int combo(uint8_t val, int *reg)
+static long int combo(uint8_t val, long int *reg)
 {
 	if(val <= 3)
 		return(val);
@@ -71,7 +69,7 @@ static int combo(uint8_t val, int *reg)
 	return(*(reg + (val - 4)));
 }
 
-static size_t exec_instructions(uint8_t *ops, int *reg, size_t len, uint8_t *out)
+static size_t exec_instructions(uint8_t *ops, long int *reg, size_t len, uint8_t *out)
 {
 	size_t instr_ptr;
 	size_t out_ptr;
@@ -84,7 +82,7 @@ static size_t exec_instructions(uint8_t *ops, int *reg, size_t len, uint8_t *out
 		switch (ops[instr_ptr])
 		{
 			case 0:
-				reg[0] = reg[0] / pow(2, combo(ops[instr_ptr + 1], reg));
+				reg[0] = reg[0] >> combo(ops[instr_ptr + 1], reg);
 				instr_ptr += 2;
 				break;
 			case 1:
@@ -110,59 +108,78 @@ static size_t exec_instructions(uint8_t *ops, int *reg, size_t len, uint8_t *out
 				instr_ptr += 2;
 				break;
 			case 6:
-				reg[1] = reg[0] / pow(2, combo(ops[instr_ptr + 1], reg));
+				reg[1] = reg[0] >> combo(ops[instr_ptr + 1], reg);
 				instr_ptr += 2;
 				break;
 			case 7:
-				reg[2] = reg[0] / pow(2, combo(ops[instr_ptr + 1], reg));
+				reg[2] = reg[0] >> combo(ops[instr_ptr + 1], reg);
 				instr_ptr += 2;
 				break;
 		}
-		if(out_ptr == len)
-			break;
 	}
 	return(out_ptr);
 }
 
-void show_progress(struct timeval start, int cur)
+int is_good(long int tmp, uint8_t *ops, size_t op_len, size_t cur_len)
 {
-	struct timeval now;
-	double itps;
-	double sec_diff;
+	long int reg[3];	
+	uint8_t *out;
+	size_t out_len;
+	size_t i;
 
-	gettimeofday(&now, 0);
-	sec_diff = (((double)now.tv_usec - (double)start.tv_usec) / 1000000) + (now.tv_sec - start.tv_sec);
-	itps = cur / sec_diff;
-	printf("currently: %d, itps : %f, time remaining until max int : %fs                 \r", cur, itps, (2147483647 - cur) / itps);
-	fflush(stdout);
+	reg[0] = tmp;
+	reg[1] = 0;
+	reg[2] = 0;
+	out = malloc(128);
+	out_len = exec_instructions(ops, reg, op_len, out);
+	if(out_len != cur_len)
+		return(0);
+	i = 0;
+	while(i < out_len)
+	{
+		if(out[out_len - i - 1] != ops[op_len - i - 1])
+			return(0);
+		i++;
+	}
+	return(1);
+}
+
+long int get_res(long int cur, uint8_t *ops, size_t len, size_t depth)
+{
+	long int nb;
+	long int tmp;
+	long int res;
+
+	nb = 0;
+	tmp = 0;
+	while(nb < 8)
+	{
+		tmp = (cur << 3 ) | nb;
+		if(is_good(tmp, ops, len, depth + 1))
+		{
+			if(depth < len)
+			{
+				res = get_res(tmp, ops, len, depth + 1);
+				if(res)
+					return(res);
+			}
+			else	
+				break;
+		}
+		nb++;
+	}
+	if(nb == 8)
+		return(0);
+	return(cur);
 }
 
 long int resolve_part2(char *input, char **split)
 {
 	(void)input;
-	int reg[3];
+	long int reg[3];
 	uint8_t *ops;
 	size_t len;
-	uint8_t *out;
-	size_t out_len;
-	int i;
-	struct timeval start;
 	
 	parse_input(split, reg, &ops, &len);
-	out = malloc(len);
-	gettimeofday(&start, 0);
-	i = 1;
-	while(1)
-	{
-		reg[0] = i;
-		reg[1] = 0;
-		reg[2] = 0;
-		out_len = exec_instructions(ops, reg, len, out);
-		if(out_len == len && !memcmp(out, ops, len))
-			return(i);
-		i++;
-		if(i % 1000000 == 0)
-			show_progress(start, i);
-	}
-	return(0);
+	return(get_res(0, ops, len, 0));
 }
