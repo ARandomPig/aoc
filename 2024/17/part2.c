@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/18 01:15:31 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/18 23:32:19 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,14 +133,21 @@ int is_good(long int tmp, uint8_t *ops, size_t op_len, size_t cur_len)
 	out = malloc(128);
 	out_len = exec_instructions(ops, reg, op_len, out);
 	if(out_len != cur_len)
+	{
+		free(out);
 		return(0);
+	}
 	i = 0;
-	while(i < out_len)
+	while(i < out_len && i < op_len)
 	{
 		if(out[out_len - i - 1] != ops[op_len - i - 1])
+		{
+			free(out);
 			return(0);
+		}
 		i++;
 	}
+	free(out);
 	return(1);
 }
 
@@ -179,7 +186,10 @@ long int resolve_part2(char *input, char **split)
 	long int reg[3];
 	uint8_t *ops;
 	size_t len;
+	long int res;
 	
 	parse_input(split, reg, &ops, &len);
-	return(get_res(0, ops, len, 0));
+	res = get_res(0, ops, len, 0);
+	free(ops);
+	return(res);
 }

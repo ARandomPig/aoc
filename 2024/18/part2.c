@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/18 16:29:43 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/19 00:48:24 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ static void *create_map(char **map, uint8_t fill, int bloc_size)
 	while(map[0][width])
 		width++;
 	res = malloc((height + 1) * sizeof(void *));	
+	res[height] = 0;
 	i = 0;
 	while(i < height)
 	{
@@ -131,28 +132,40 @@ static int is_valid_move(char **map, char **visited, int y, int x)
 	return(x >= 0 && y >= 0 && map[y] && map[y][x] == '.' && !visited[y][x]);
 }
 
+static void free_lst(t_lst *lst)
+{
+	t_lst *tmp;
+
+	while(lst)
+	{
+		tmp = lst->next;
+		free(lst);
+		lst = tmp;
+	}
+}
+
 static uint32_t dijkstra(char **map, t_pos *pos, int corner)
 {
 	int dir[2];
 	int tmp[2];
 	char **visited;
-	uint32_t **dists;
 	t_lst *lst;
 	uint32_t score;
 
 	visited = create_map(map, 0, 1);
-	dists = create_map(map, 255, sizeof(uint32_t));
 	lst = 0;
 	add_lst(&lst, 0, *pos, (int [2]){0, 1});
 	while(get_new_pos(&lst, visited, pos, &score, dir))
 	{
-		if(dists[pos->y][pos->x] > score)
-			dists[pos->y][pos->x] = score;
 		visited[pos->y][pos->x] = 1;
 		if(map[pos->y][pos->x] == '#')
 			continue;
 		if(pos->y == corner && pos->x == corner)
+		{
+			free_lst(lst);
+			ft_free_str_arr(visited);
 			return(score);
+		}
 		if(is_valid_move(map, visited, pos->y + dir[0], pos->x + dir[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
 		rotate_dir(dir, 0, tmp);
@@ -162,8 +175,7 @@ static uint32_t dijkstra(char **map, t_pos *pos, int corner)
 		if(is_valid_move(map, visited, pos->y + tmp[0], pos->x + tmp[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + tmp[1], pos->y + tmp[0]}, tmp);
 	}
-	if(dists[corner][corner] != (uint32_t) -1)
-		return(dists[corner][corner]);
+	ft_free_str_arr(visited);
 	return(0);
 }
 
@@ -280,6 +292,7 @@ long int resolve_part2(char *input, char **split)
 	size = 70;
 	map = create_map_size(size + 1, '.');
 	i = get_res_index(map, split, size);
+	ft_free_str_arr(map);
 	printf("real res p2 : %s\n", split[i]);
 	return(i);
 }

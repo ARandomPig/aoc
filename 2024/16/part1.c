@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/17 12:55:09 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/18 23:21:58 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ void *create_map(char **map, uint8_t fill, int bloc_size)
 	while(map[0][width])
 		width++;
 	res = malloc((height + 1) * sizeof(void *));	
+	res[height] = 0;
 	i = 0;
 	while(i < height)
 	{
@@ -186,6 +187,18 @@ int	*rotate_dir(int dir[2], int inv, int *res)
 	return(res);
 }
 
+static void free_lst(t_lst *lst)
+{
+	t_lst *tmp;
+
+	while(lst)
+	{
+		tmp = lst->next;
+		free(lst);
+		lst = tmp;
+	}
+}
+
 uint32_t dijkstra(char **map, t_pos *pos)
 {
 	int dir[2];
@@ -203,7 +216,11 @@ uint32_t dijkstra(char **map, t_pos *pos)
 		if(map[pos->y][pos->x] == '#')
 			continue;
 		if(map[pos->y][pos->x] == 'E')
+		{
+			free_lst(lst);
+			ft_free_str_arr(visited);
 			return(score);
+		}
 		if(map[pos->y + dir[0]][pos->x + dir[1]] != '#')
 			add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
 		rotate_dir(dir, 0, tmp);
@@ -213,6 +230,7 @@ uint32_t dijkstra(char **map, t_pos *pos)
 		if(map[pos->y + tmp[0]][pos->x + tmp[1]] != '#')
 			add_lst(&lst, score + 1000, *pos, tmp);
 	}
+	ft_free_str_arr(visited);
 	return(0);
 }
 

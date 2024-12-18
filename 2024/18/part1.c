@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/18 16:05:18 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/19 00:49:19 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ static void *create_map(char **map, uint8_t fill, int bloc_size)
 	while(map[0][width])
 		width++;
 	res = malloc((height + 1) * sizeof(void *));	
+	res[height] = 0;
 	i = 0;
 	while(i < height)
 	{
@@ -131,6 +132,18 @@ static int is_valid_move(char **map, int y, int x)
 	return(x >= 0 && y >= 0 && map[y] && map[y][x] == '.');
 }
 
+static void free_lst(t_lst *lst)
+{
+	t_lst *tmp;
+
+	while(lst)
+	{
+		tmp = lst->next;
+		free(lst);
+		lst = tmp;
+	}
+}
+
 static uint32_t dijkstra(char **map, t_pos *pos)
 {
 	int dir[2];
@@ -148,7 +161,11 @@ static uint32_t dijkstra(char **map, t_pos *pos)
 		if(map[pos->y][pos->x] == '#')
 			continue;
 		if(pos->y == 70 && pos->x == 70)
+		{
+			free_lst(lst);
+			ft_free_str_arr(visited);
 			return(score);
+		}
 		if(is_valid_move(map, pos->y + dir[0], pos->x + dir[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
 		rotate_dir(dir, 0, tmp);
@@ -158,6 +175,7 @@ static uint32_t dijkstra(char **map, t_pos *pos)
 		if(is_valid_move(map, pos->y + tmp[0], pos->x + tmp[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + tmp[1], pos->y + tmp[0]}, tmp);
 	}
+	ft_free_str_arr(visited);
 	return(0);
 }
 
@@ -212,8 +230,11 @@ long int resolve_part1(char *input, char **split)
 {
 	char **map;
 	(void)input;
+	long int res;
 
 	map = create_map_size(71, '.');
 	fill_map(map, split, 1024);
-	return(dijkstra(map,&((t_pos){0, 0})));
+	res = dijkstra(map,&((t_pos){0, 0}));
+	ft_free_str_arr(map);
+	return(res);
 }

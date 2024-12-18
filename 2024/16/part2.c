@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/17 15:34:55 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/18 23:27:17 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,6 +224,7 @@ static void *create_map(char **map, uint8_t fill, int bloc_size)
 	while(map[0][width])
 		width++;
 	res = malloc((height + 1) * sizeof(void *));	
+	res[height] = 0;
 	i = 0;
 	while(i < height)
 	{
@@ -276,8 +277,33 @@ long int get_result(t_pos_lst ***path, t_pos pos, char **map, uint32_t score)
 			j++;
 		}
 		i++;
-	}	
+	}
 	return(res + 1);
+}
+
+static void free_path(char **map, t_pos_lst ***path)
+{
+	int i;
+	int j;
+	t_pos_lst *tmp;
+
+	i = 0;
+	while(map[i])
+	{
+		j = 0;
+		while(map[i][j])
+		{
+			while(path[i][j])
+			{
+				tmp = path[i][j]->next;
+				free(path[i][j]);
+				path[i][j] = tmp;
+			}
+			j++;
+		}
+		i++;
+	}
+	ft_free_str_arr((char **)path);
 }
 
 long int resolve_part2(char *input, char **split)
@@ -295,5 +321,7 @@ long int resolve_part2(char *input, char **split)
 	score = dijkstra(split, &pos, visited, path);
 	get_char(split, &pos, 'E');
 	res = get_result(path, pos, split, score);
+	ft_free_str_arr(visited);
+	free_path(split, path);
 	return(res);
 }
