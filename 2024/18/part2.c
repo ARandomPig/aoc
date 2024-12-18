@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/18 14:19:27 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/18 16:29:43 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,9 +126,9 @@ static int	*rotate_dir(int dir[2], int inv, int *res)
 	return(res);
 }
 
-static int is_valid_move(char **map, int y, int x)
+static int is_valid_move(char **map, char **visited, int y, int x)
 {
-	return(x >= 0 && y >= 0 && map[y] && map[y][x] == '.');
+	return(x >= 0 && y >= 0 && map[y] && map[y][x] == '.' && !visited[y][x]);
 }
 
 static uint32_t dijkstra(char **map, t_pos *pos, int corner)
@@ -151,13 +151,15 @@ static uint32_t dijkstra(char **map, t_pos *pos, int corner)
 		visited[pos->y][pos->x] = 1;
 		if(map[pos->y][pos->x] == '#')
 			continue;
-		if(is_valid_move(map, pos->y + dir[0], pos->x + dir[1]))
+		if(pos->y == corner && pos->x == corner)
+			return(score);
+		if(is_valid_move(map, visited, pos->y + dir[0], pos->x + dir[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + dir[1], pos->y + dir[0]}, dir);
 		rotate_dir(dir, 0, tmp);
-		if(is_valid_move(map, pos->y + tmp[0], pos->x + tmp[1]))
+		if(is_valid_move(map, visited, pos->y + tmp[0], pos->x + tmp[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + tmp[1], pos->y + tmp[0]}, tmp);
 		rotate_dir(dir, 1, tmp);
-		if(is_valid_move(map, pos->y + tmp[0], pos->x + tmp[1]))
+		if(is_valid_move(map, visited, pos->y + tmp[0], pos->x + tmp[1]))
 			add_lst(&lst, score + 1, (t_pos){pos->x + tmp[1], pos->y + tmp[0]}, tmp);
 	}
 	if(dists[corner][corner] != (uint32_t) -1)
@@ -195,27 +197,89 @@ static void get_nbrs(char *line, int *x, int *y)
 	*y = ft_atoi(line);
 }
 
-long int resolve_part2(char *input, char **split)
+static void fill_map(char **map, char **split, int limit)
 {
-	char **map;
-	(void)input;
 	int x;
 	int y;
 	int i;
 
-	map = create_map_size(71, '.');
 	(void)map;
-	i = 1024;
-	while(split[i])
+	i = 0;
+	while(*split && i < limit)
 	{
-		get_nbrs(split[i], &x, &y);
+		get_nbrs(*split, &x, &y);
 		map[y][x] = '#';
-		if(dijkstra(map,&((t_pos){0, 0}), 70) == 0)
-		{
-			printf("real res : %d,%d\n", x, y);
-			return(i);
-		}
+		split++;
 		i++;
 	}
-	return(-1);
+}
+
+static void reset_map(char **map)
+{
+	int i;
+
+	i = 0;
+	while(*map)
+	{
+		i = 0;
+		while((*map)[i])
+		{
+			if((*map)[i] == '#')
+				(*map)[i] = '.';
+			i++;
+		}
+		map++;
+	}
+}
+
+int get_res_index(char **map, char **split, int size)
+{
+	int from;
+	int to;
+	int mid;
+	
+	(void)map;
+	from = 0;
+	if(size == 70)
+		from = 1024;
+	to = 0;
+	while(split[to])
+		to++;
+	if(from > to)
+	{
+		fprintf(stderr, "part 2 does not work by default on test input\n");
+		exit(1);
+	}
+	while(to - from > 1)
+	{
+		mid = (from + to) / 2;
+		reset_map(map);
+		fill_map(map, split, mid);
+		if(!dijkstra(map, &((t_pos){0, 0}), size))
+			to = mid;
+		else
+			from = mid;
+	}
+	if(from != to)
+	{
+		reset_map(map);
+		fill_map(map, split, from);
+		if(!dijkstra(map, &((t_pos){0, 0}), size))
+			to = from;
+	}
+	return(to - 1);
+}
+
+long int resolve_part2(char *input, char **split)
+{
+	char **map;
+	(void)input;
+	int i;
+	int size;
+
+	size = 70;
+	map = create_map_size(size + 1, '.');
+	i = get_res_index(map, split, size);
+	printf("real res p2 : %s\n", split[i]);
+	return(i);
 }
