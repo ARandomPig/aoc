@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/22 20:19:21 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/22 20:25:29 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ static void add_char(int nb, char c, char *res, int *i)
 	res[*i] = 0;
 }
 
-int move_y(char **map, int diff[2], int from[2])
+static int move_y(char **map, int diff[2], int from[2])
 {
 	int diff_spc[2];
 	int spc[2];
@@ -63,7 +63,7 @@ int move_y(char **map, int diff[2], int from[2])
 	return((diff[1] > 0 || (diff_spc[1] == diff[1] && diff_spc[0] == 0)) && (diff_spc[0] != diff[0] || diff_spc[1] != 0));
 }
 
-char *plan_route(char **map, int from[2], int to[2])
+static char *plan_route(char **map, int from[2], int to[2])
 {
 	int diff[2];
 	char chrs[2];
@@ -95,25 +95,18 @@ char *plan_route(char **map, int from[2], int to[2])
 	return(res);
 }
 
-uint64_t get_cache(t_cache *cache, char *str, int depth, int *pos)
+static uint64_t get_cache(t_cache *cache, char *str, int depth, int *pos)
 {
-	int i;
-	i = 0;
 	while(cache)
 	{
 		if(!ft_strcmp(cache->str, str) && cache->depth == depth && cache->pos[0] == pos[0] && cache->pos[1] == pos[1])
-		{
-			printf("cache used\n");
 			return(cache->res);
-		}
 		cache = cache->next;
-		i++;
 	}
-	printf("cache len : %d\n", i);
 	return(0);
 }
 
-void add_cache(t_cache **cache, char *str, int depth, int *pos, uint64_t res)
+static void add_cache(t_cache **cache, char *str, int depth, int *pos, uint64_t res)
 {
 	t_cache *new;
 
@@ -127,7 +120,7 @@ void add_cache(t_cache **cache, char *str, int depth, int *pos, uint64_t res)
 	*cache = new;
 }
 
-uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectives, int depth)
+static uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectives, int depth)
 {
 	static t_cache *cache;
 	int cur_objective[2];
@@ -145,7 +138,7 @@ uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectiv
 			keypad = robot_pad;
 		get_char_pos(keypad, objectives[i], cur_objective);
 		path = plan_route(keypad, pos[depth], cur_objective);
-		if(depth < 25)
+		if(depth < 2)
 			res += get_path_len(keypad, robot_pad, pos, path, depth + 1);
 		else
 			res += ft_strlen(path);
@@ -158,7 +151,7 @@ uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectiv
 	return(res);
 }
 
-int **init_positions(int nb)
+static int **init_positions(int nb)
 {
 	int **res;
 	int i;
@@ -189,12 +182,10 @@ uint64_t resolve_part1(char *input, char **split)
 
 	keypad = ft_split("789\n456\n123\n 0A", '\n');
 	robot_pad = ft_split(" ^A\n<v>", '\n');
-	pos = init_positions(30);
+	pos = init_positions(3);
 	res = 0;
 	while(*split)
 	{
-		printf("%s\n", *split);
-//		printf("%zu\n", get_path_len(keypad, robot_pad, pos, *split, 0));
 		res += get_path_len(keypad, robot_pad, pos, *split, 0) * ft_atoi(*split);
 		split++;
 	}
