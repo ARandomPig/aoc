@@ -1,12 +1,12 @@
 /* ************************************************ ************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   part1.c                                            :+:      :+:    :+:   */
+/*   part2.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/23 23:20:04 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/24 00:26:43 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,12 @@ typedef struct s_connected
 	struct s_connected *next;
 
 } t_connected;
+
+typedef struct s_found
+{
+	t_computer *comp;
+	struct s_found *next;
+}	t_found;
 
 static t_computer *get_computer(t_computer *list, char *name)
 {
@@ -88,6 +94,27 @@ static void parse_line(t_computer **list, char *line)
 	add_to_computer(list, c2, c1);
 }
 
+static int is_in_found(t_found *found, t_computer *c)
+{
+	while(found)
+	{
+		if(found->comp == c)
+			return(1);
+		found = found->next;
+	}
+	return(0);
+}
+
+static void add_found(t_found **found, t_computer *c)
+{
+	t_found *new;
+
+	new = malloc(sizeof(t_found));
+	new->comp = c;
+	new->next = *found;
+	*found = new;
+}
+
 static int is_connected(t_computer *c1, t_computer *c2)
 {
 	t_connected *tmp;
@@ -111,64 +138,108 @@ static int is_connected(t_computer *c1, t_computer *c2)
 	return(0);
 }
 
-static int is_done(t_done *done, t_computer *c1, t_computer *c2, t_computer *c3)
+static void find_connected(t_found **found,t_found **res, t_computer *comp)
 {
-	while(done)
+	t_connected *lst;
+	t_found *tmp;
+
+	if(!comp || is_in_found(*found, comp))
+		return;
+	add_found(found, comp);
+	if(!*res)
+		add_found(res, comp);
+	tmp = *res;
+	while(tmp)
 	{
-		if((done->lst[0] == c1 || done->lst[0] == c2 || done->lst[0] == c3) && (done->lst[1] == c1 || done->lst[1] == c2 || done->lst[1] == c3) && (done->lst[2] == c1 || done->lst[2] == c2 || done->lst[2] == c3))
-			return(1);
-		done = done->next;
+		if(!is_connected(tmp->comp, comp))
+			break;
+		tmp = tmp->next;
 	}
-	return(0);
+	if(!tmp)
+		add_found(res, comp);
+	lst = comp->connected;
+	while(lst)
+	{
+		find_connected(found,res, lst->comp);	
+		lst = lst->next;
+	}
 }
 
-static void add_done(t_done **done, t_computer *c1, t_computer *c2, t_computer *c3)
+static void sort_list(t_found *found)
 {
-	t_done *new;
+	t_found *cur;
+	t_found *start;
+	char tmp;
 
-	new = malloc(sizeof(t_done));
-	new->lst[0] = c1;
-	new->lst[1] = c2;
-	new->lst[2] = c3;
-	new->next = *done;
-	*done = new;
+	start = found;
+	cur = found;
+	while(cur)
+	{
+		found = start;
+		while(found->next)
+		{
+			if(ft_strcmp(found->comp->name, found->next->comp->name) > 0)
+			{
+				tmp = found->comp->name[0];
+				found->comp->name[0] = found->next->comp->name[0];
+				found->next->comp->name[0] = tmp;
+				tmp = found->comp->name[1];
+				found->comp->name[1] = found->next->comp->name[1];
+				found->next->comp->name[1] = tmp;
+				tmp = found->comp->name[2];
+				found->comp->name[2] = found->next->comp->name[2];
+				found->next->comp->name[2] = tmp;
+			}
+			found = found->next;
+		}
+		cur = cur->next;	
+	}
 }
 
 static int get_res(t_computer *input)
 {
-	t_connected *tmp1;
-	t_connected *tmp2;
-	t_done *done;
-	int res;
-
+	t_found *found;
+	t_found *res;
+	t_found *tmp;
+	int i;
+	int max_len;
+	
 	res = 0;
-	done = 0;
+	max_len = 0;
 	while(input)
 	{
-		tmp1 = input->connected;
-		while(tmp1)
+		found = 0;
+		tmp = 0;
+		find_connected(&tmp,&found, input);
+		i = 0;
+		tmp = found;
+		while(tmp)
 		{
-			tmp2 = input->connected;
-			while(tmp2)
-			{
-				if(tmp1 != tmp2)
-				{
-					if(is_connected(tmp1->comp, tmp2->comp) && !is_done(done, input, tmp1->comp, tmp2->comp))
-					{
-						res += (*input->name == 't' || *tmp1->comp->name == 't' || *tmp2->comp->name == 't');
-						add_done(&done, input, tmp1->comp, tmp2->comp);
-					}
-				}
-				tmp2 = tmp2->next;
-			}
-			tmp1 = tmp1->next;
+			tmp = tmp->next;
+			i++;
+		}
+		if(i > max_len)
+		{
+			max_len = i;
+			res = found;
 		}
 		input = input->next;
 	}
-	return(res);
+	i = 0;
+	while(res)
+	{
+		sort_list(res);
+		printf("%s", res->comp->name);
+		if(res->next)
+			printf(",");
+		res = res->next;
+		i++;
+	}
+	printf("\n");
+	return(0);
 }
 
-long int resolve_part1(char *line, char **split)
+long int resolve_part2(char *line, char **split)
 {
 	(void)line;
 	t_computer *input;
