@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/23 23:20:04 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/28 12:23:06 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,18 @@ static void add_done(t_done **done, t_computer *c1, t_computer *c2, t_computer *
 	*done = new;
 }
 
+static void free_done(t_done *d)
+{
+	t_done *tmp;
+
+	while(d)
+	{
+		tmp = d->next;
+		free(d);
+		d = tmp;
+	}
+}
+
 static int get_res(t_computer *input)
 {
 	t_connected *tmp1;
@@ -165,7 +177,33 @@ static int get_res(t_computer *input)
 		}
 		input = input->next;
 	}
+	free_done(done);
 	return(res);
+}
+
+static void free_connected(t_connected *co)
+{
+	t_connected *tmp;
+
+	while(co)
+	{
+		tmp = co->next;
+		free(co);
+		co = tmp;
+	}
+}
+
+static void free_computer(t_computer *in)
+{
+	t_computer *tmp;
+
+	while(in)
+	{
+		tmp = in->next;
+		free_connected(in->connected);
+		free(in);
+		in = tmp;
+	}
 }
 
 long int resolve_part1(char *line, char **split)
@@ -182,5 +220,6 @@ long int resolve_part1(char *line, char **split)
 		split++;
 	}
 	res = get_res(input);
+	free_computer(input);
 	return(res);
 }

@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/22 20:25:29 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/28 11:39:36 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,20 @@ static void add_cache(t_cache **cache, char *str, int depth, int *pos, uint64_t 
 	*cache = new;
 }
 
-static uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectives, int depth)
+static void clear_cache(t_cache *cache)
+{
+	t_cache *tmp;
+
+	while(cache)
+	{
+		tmp = cache->next;
+		free(cache->str);
+		free(cache);
+		cache = tmp;
+	}
+}
+
+static uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *objectives, int depth, int clear)
 {
 	static t_cache *cache;
 	int cur_objective[2];
@@ -128,6 +141,11 @@ static uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *o
 	uint64_t res;
 	int i;
 
+	if(clear)
+	{
+		clear_cache(cache);
+		return(0);
+	}
 	res = get_cache(cache, objectives, depth, pos[depth]);
 	i = 0;
 	if(res)
@@ -139,7 +157,7 @@ static uint64_t get_path_len(char **keypad, char **robot_pad, int **pos, char *o
 		get_char_pos(keypad, objectives[i], cur_objective);
 		path = plan_route(keypad, pos[depth], cur_objective);
 		if(depth < 2)
-			res += get_path_len(keypad, robot_pad, pos, path, depth + 1);
+			res += get_path_len(keypad, robot_pad, pos, path, depth + 1, 0);
 		else
 			res += ft_strlen(path);
 		free(path);
@@ -186,11 +204,12 @@ uint64_t resolve_part1(char *input, char **split)
 	res = 0;
 	while(*split)
 	{
-		res += get_path_len(keypad, robot_pad, pos, *split, 0) * ft_atoi(*split);
+		res += get_path_len(keypad, robot_pad, pos, *split, 0, 0) * ft_atoi(*split);
 		split++;
 	}
 	ft_free_str_arr((void *)pos);
 	ft_free_str_arr(keypad);
 	ft_free_str_arr(robot_pad);
+	get_path_len(0, 0, 0, 0, 0 ,1);
 	return(res);
 }

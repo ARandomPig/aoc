@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/25 12:08:33 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/29 23:53:18 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ long int resolve_part1(char *input, char **split)
 {
 	int i;
 	t_elem *lst;
+	t_elem *tmp;
 	int res;
 
 	i = 1;
@@ -128,5 +129,11 @@ long int resolve_part1(char *input, char **split)
 	lst = get_all(split);
 	ft_free_str_arr(split);
 	res = get_res(lst);
+	while(lst)
+	{
+		tmp = lst->next;
+		free(lst);
+		lst = tmp;
+	}
 	return(res);
 }

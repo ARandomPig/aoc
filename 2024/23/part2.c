@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/24 00:26:43 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/29 23:49:22 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,6 +196,18 @@ static void sort_list(t_found *found)
 	}
 }
 
+static void free_found(t_found *f)
+{
+	t_found *tmp;
+
+	while(f)
+	{
+		tmp = f->next;
+		free(f);
+		f = tmp;
+	}
+}
+
 static int get_res(t_computer *input)
 {
 	t_found *found;
@@ -211,6 +223,7 @@ static int get_res(t_computer *input)
 		found = 0;
 		tmp = 0;
 		find_connected(&tmp,&found, input);
+		free_found(tmp);
 		i = 0;
 		tmp = found;
 		while(tmp)
@@ -221,10 +234,15 @@ static int get_res(t_computer *input)
 		if(i > max_len)
 		{
 			max_len = i;
+			if(res)
+				free_found(res);
 			res = found;
 		}
+		else
+			free_found(found);
 		input = input->next;
 	}
+	tmp = res;
 	i = 0;
 	while(res)
 	{
@@ -236,7 +254,33 @@ static int get_res(t_computer *input)
 		i++;
 	}
 	printf("\n");
+	free_found(tmp);
 	return(0);
+}
+
+static void free_connected(t_connected *co)
+{
+	t_connected *tmp;
+
+	while(co)
+	{
+		tmp = co->next;
+		free(co);
+		co = tmp;
+	}
+}
+
+static void free_computer(t_computer *in)
+{
+	t_computer *tmp;
+
+	while(in)
+	{
+		tmp = in->next;
+		free_connected(in->connected);
+		free(in);
+		in = tmp;
+	}
 }
 
 long int resolve_part2(char *line, char **split)
@@ -253,5 +297,6 @@ long int resolve_part2(char *line, char **split)
 		split++;
 	}
 	res = get_res(input);
+	free_computer(input);
 	return(res);
 }

@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/24 18:44:00 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/29 23:51:59 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -254,6 +254,7 @@ long int resolve_part2(char *input, char **split)
 {
 	(void)input;
 	t_vars *vars;
+	t_vars *tmp;
 	
 	vars = 0;
 	while((*split)[3] == ':')
@@ -269,5 +270,12 @@ long int resolve_part2(char *input, char **split)
 //	show_wrong(vars);
 	get_wrong(vars);
 	printf("order it yourself idgaf\n");
+	while(vars)
+	{
+		tmp = vars->next;
+		free(vars->op);
+		free(vars);
+		vars = tmp;
+	}
 	return(0);
 }

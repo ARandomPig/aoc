@@ -6,7 +6,7 @@
 /*   By: tomoron <tomoron@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/17 23:03:36 by tomoron           #+#    #+#             */
-/*   Updated: 2024/12/24 16:05:51 by tomoron          ###   ########.fr       */
+/*   Updated: 2024/12/29 23:51:34 by tomoron          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,13 @@ long int resolve_part1(char *input, char **split)
 				res += (uint64_t)1 << ft_atoi(tmp->name + 1);
 		}
 		tmp = tmp->next;
+	}
+	while(vars)
+	{
+		tmp = vars->next;
+		free(vars->op);
+		free(vars);
+		vars = tmp;
 	}
 	return(res);
 }
